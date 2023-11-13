@@ -1,0 +1,125 @@
+title: "Bastion Host"
+description: "Bastion Host in OCI"
+outputGroups:
+- title: "Bastion Instance"
+schemaVersion: 1.1.0
+locale: "en"
+variableGroups:
+  - title: "OCI(Oracle Cloud Infrastructure) details"
+    variables:
+      - compartment_ocid
+      - current_user_ocid
+
+  - title: "ACP Configuration"
+    variables:     
+      - image_compartment
+      - instance_image
+      - instance_shape
+      - display_name
+      - availability_domain
+      - useExistingVcn
+      - vcnCompartment
+      - myVcn
+      - subnetCompartment
+      - private_subnet_id
+      - assign_public_ip
+      - ssh_authorized_key
+
+  - title: "ACP Instnce Configuration"
+    variables:     
+      - instance_config.ocpus
+
+variables:
+  compartment_ocid:
+    type: oci:identity:compartment:id
+    required: true
+    description: "Select the OCI compartment within your tenancy for instance creation"
+    title: "Compartment"
+  current_user_ocid:
+    type: string
+    required: true
+    description: "Enter the user OCID associated with the OCI account"
+    title: "User"
+  display_name:
+    type: string
+    minLength: 1
+    maxLength: 255
+    pattern: "^[a-z][a-zA-Z0-9]+$"
+    title: display name
+    description: "display name"
+    required: true
+  availability_domain:
+    type: oci:identity:availabilitydomain:name
+    dependsOn:
+      compartmentId: ${compartment_ocid}
+    visible: complexExpression
+  
+  image_compartment:
+    type: oci:identity:compartment:id
+
+  instance_image:
+    type: oci:core:image:id
+    required: true
+    description: "Select the image for the VM deployment"
+    title: "Image"
+    dependsOn:
+      compartmentId: ${image_compartment}
+
+  instance_shape:
+    type: oci:core:instanceshape:name
+    required: true
+    description: "Select the shape for the VM deployment"
+    title: "Shape"
+    dependsOn:
+      compartmentId: ${compartment_ocid}
+      imageId: ${instance_image}
+
+  useExistingVcn:
+    type: boolean
+
+  vcnCompartment:
+    type: oci:identity:compartment:id
+    visible: ${useExistingVcn}
+
+  myVcn:
+    type: oci:core:vcn:id
+    dependsOn:
+      compartmentId: ${vcnCompartment}
+    visible:
+      or:
+        - ${useExistingVcn}
+        - and:
+            - and:
+                - true
+                - true
+            - not:
+                - false
+
+  private_subnet_id:
+    type: oci:core:subnet:id
+    dependsOn:
+      compartmentId: ${vcnCompartment}
+      vcnId: ${myVcn}
+    visible: ${useExistingVcn}
+    title: Subnet
+    description: "Choose subnet to create the instance"
+
+  assign_public_ip: 
+    type: enum
+    enum: 
+     - false
+     - true
+    required: true
+    title: Assign public IP ?
+    description: "Assign public IP to the instance"
+
+  ssh_authorized_key:
+    title: SSH public key
+    description: Public SSH key to be included in the ~/.ssh/authorized_keys file for the default user on the instance
+    type: oci:core:ssh:publickey
+    additionalProps:
+      allowMultiple: true
+    required: false
+    default: [""]
+    pattern: "((^(ssh-rsa AAAAB3NzaC1yc2|ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNT|ecdsa-sha2-nistp384 AAAAE2VjZHNhLXNoYTItbmlzdHAzODQAAAAIbmlzdHAzOD|ecdsa-sha2-nistp521 AAAAE2VjZHNhLXNoYTItbmlzdHA1MjEAAAAIbmlzdHA1Mj|ssh-ed25519 AAAAC3NzaC1lZDI1NTE5|ssh-dss AAAAB3NzaC1kc3)[0-9A-Za-z+\/]+[=]{0,3})( [^,]*)?)(,((ssh-rsa AAAAB3NzaC1yc2|ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNT|ecdsa-sha2-nistp384 AAAAE2VjZHNhLXNoYTItbmlzdHAzODQAAAAIbmlzdHAzOD|ecdsa-sha2-nistp521 AAAAE2VjZHNhLXNoYTItbmlzdHA1MjEAAAAIbmlzdHA1Mj|ssh-ed25519 AAAAC3NzaC1lZDI1NTE5|ssh-dss AAAAB3NzaC1kc3)[0-9A-Za-z+\/]+[=]{0,3})( [^,]*)?)*$"
+  #
