@@ -103,6 +103,7 @@ variables:
     visible: ${useExistingVcn}
     title: Subnet
     description: "Choose subnet to create the instance"
+    required: true
 
   assign_public_ip: 
     type: enum
