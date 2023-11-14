@@ -40,6 +40,10 @@ terraform {
 
 ## Usage
 
+    module "terraform-oci-compute" {
+        source = "github.com/avaloqcloud/application-jump-host"
+    }
+
 | Name | Source | Version |
 |------|--------|---------|
 | <a name="module_bastion"></a> [bastion](#module\_bastion) | github.com/avaloqcloud/terraform-oci-compute | v0.1.0 |
